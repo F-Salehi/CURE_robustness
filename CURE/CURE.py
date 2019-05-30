@@ -42,11 +42,22 @@ class CURE():
         self.test_loss_best, self.test_acc_adv_best, self.test_acc_clean_best, self.test_curv_best = 0, 0, 0, 0
     
 
-    def set_optimizer(optim_alg='Adam', args={'lr':1e-4}, scheduler=None, args_scheduler={}):
+    def set_optimizer(self, optim_alg='Adam', args={'lr':1e-4}, scheduler=None, args_scheduler={}):
         '''
         setting the optimizer of the network
+        
+        Arguments:
+        
+        optim_alg : string
+            NAme of the optimizer
+        args: dict
+            Parameter of the optimizer
+        scheduler: optim.lr_scheduler
+            Learning rate scheduler
+        args_scheduler : dict
+            Parameters of the scheduler
         '''
-        self.optimizer = getattr(optim, optim_alg)([x], **args)
+        self.optimizer = getattr(optim, optim_alg)(self.net.parameters(), **args)
         if not scheduler:
             self.scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10**6, gamma=1)
         else:
@@ -191,36 +202,6 @@ class CURE():
 
         return z, norm_grad
     
-    def regularizer_min_max(self, inputs, targets, h = 2.):
-        '''
-        regularizer
-        '''
-        num_min = int(len(targets) * self.precentage)
-        z, norm_grad = self._find_z(inputs, targets)
-        if self.learn_h_flag:
-            outputs = self.net.eval()(inputs)
-            h = self.learn_h(outputs, inputs)
-        z = 1.*(h) * (z+1e-7) / (z.reshape(z.size(0), -1).norm(dim=1)[:, None, None, None]+1e-7)   
-        inputs.requires_grad_()
-        outputs_pos = self.net(inputs + z)
-        outputs_orig = self.net(inputs)
-        loss_pos = self.criterion(outputs_pos, targets)
-        loss_orig = self.criterion(outputs_orig, targets)
-        diff_loss = loss_pos #- loss_orig
-        grad_diff = torch.autograd.grad(diff_loss, inputs, grad_outputs=torch.ones(targets.size()).to('cuda:0'),
-                                        create_graph=True)[0]
-        if self.learn_h:
-            grad_diff /= h
-        reg = grad_diff.reshape(grad_diff.size(0), -1).norm(dim=1)
-        ### Selecting the precentage of the data
-        reg_select = copy.copy(reg.data.detach()).cpu().numpy() + 0.
-        reg_selected_idx = np.argsort(reg_select)[:num_min]
-        lambda_ = torch.ones_like(targets,dtype=torch.float32) * self.lambda_max
-        lambda_[reg_selected_idx] = self.lambda_min
-        loss_reg = torch.sum(lambda_ * reg) / 128.0 #float(inputs.size(0)) #float(len(reg_selected_idx))
-        loss_reg_all = torch.sum( 4 * reg.detach().data) / 128.0
-        self.net.zero_grad()
-        return loss_reg, loss_reg_all, norm_grad
         
     def regularizer(self, inputs, targets, h = 3., lambda_ = 4, mode = 'normal'):
         z, norm_grad = self._find_z(inputs, targets)
@@ -248,27 +229,6 @@ class CURE():
             loss_reg = torch.sum(lambda_ * reg) / float(inputs.size(0))
             return loss_reg.detach().item(), norm_grad
         
-    def fast_regual(self, inputs, targets, h = 1.):
-        inputs = copy.deepcopy(inputs) 
-        z, norm_grad = self._find_z(inputs, targets)
-        if self.learn_h_flag:
-            h = self.learn_h(outputs, inputs)
-        z = 1.*(h) * (z+1e-7) / (z.reshape(z.size(0), -1).norm(dim=1)[:, None, None, None]+1e-7)
-        inputs.requires_grad_()
-        outputs_pos = self.net(inputs + z)
-        loss_pos = self.criterion(outputs_pos, targets)
-        loss_pos.backward(torch.ones(targets.size()).to('cuda:0'))         
-        grad = inputs.grad.data + 0.0
-        self.net.zero_grad()
-        z1 = torch.sign(grad).detach() 
-        h1 = self.lambda_min
-        z1 = 1.*(h1) * (z1+1e-7) / (z1.reshape(z1.size(0), -1).norm(dim=1)[:, None, None, None]+1e-7)
-        inputs_aug = inputs + z1
-        inputs_aug.detach_()
-        inputs_aug.requires_grad = False
-        outputs_aug = self.net(inputs_aug)
-        loss_reg = self.criterion(outputs_aug, targets)
-        return loss_reg, norm_grad
     
 
     def get_curvs(self, loader ,h, mode = 'all'):
@@ -300,22 +260,6 @@ class CURE():
             curv_false = np.hstack(curv_false)
             return curv_correct, curv_false
         
-    def set_only_correct_regual(self, flag = True):
-        self.only_correct_flag = flag
-    
-    def return_h(self, dataloader): 
-        '''
-        returns the h computed for the network
-        '''
-        h = torch.zeros(len(dataloader.dataset))
-        for batch_idx, (inputs, targets, indices) in enumerate(dataloader):
-            inputs, targets = inputs.to(self.device), targets.to(self.device)
-            inputs.requires_grad_()
-            zero_gradients(inputs) 
-            outputs = self.net.eval()(inputs)
-            h_temp = self.learn_h(outputs, inputs)
-            h[indices] = h_temp.view(-1).cpu()
-        return h
             
     def save_model(self, path):
         '''
@@ -330,7 +274,7 @@ class CURE():
         
     def import_model(self, path):
         '''
-        Importing the already trained model
+        Import the already trained model
         '''
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint['net'])
