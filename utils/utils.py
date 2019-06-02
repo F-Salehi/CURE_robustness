@@ -1,6 +1,7 @@
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.data import Dataset, DataLoader
+import time
 
 def read_vision_dataset(path, batch_size=128, num_workers=4, dataset='CIFAR10', transform=None):
     '''
@@ -80,7 +81,7 @@ def pgd(inputs, net, epsilon=[1.], targets=None, step_size=0.04, num_steps=20, e
     r_tot = r_tot / regul
     
     return r_tot.cpu()
-    
+
 def progress_bar(current, total, msg=None):
     global last_time, begin_time
     if current == 0:
