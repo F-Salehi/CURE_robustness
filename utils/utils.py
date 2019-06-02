@@ -7,6 +7,7 @@ from torch.autograd.gradcheck import zero_gradients
 import time
 import shutil
 import sys
+import numpy as np
 
 def read_vision_dataset(path, batch_size=128, num_workers=4, dataset='CIFAR10', transform=None):
     '''
