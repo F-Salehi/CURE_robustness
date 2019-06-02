@@ -144,7 +144,7 @@ class CURE():
             probs, predicted = outputs.max(1)
             adv_acc += predicted.eq(targets).sum().item()
             cur, norm_grad = self.regularizer(inputs, targets, h=h)
-            grad_sum += norm_grad.item()
+            grad_sum += norm_grad
             curvature += cur.item()
             test_loss += cur.item()
 
