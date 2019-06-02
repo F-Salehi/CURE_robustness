@@ -148,8 +148,8 @@ class CURE():
             curvature += cur.item()
             test_loss += cur.item()
 
-        print(f'epoch = {epoch}, adv_acc = {100.*adv_acc/total}, clean_acc = {100.*clean_acc/total}, loss = {test_loss/num_batches}', \
-            f'curvature = {curvature/num_batches}')
+        print(f'epoch = {epoch}, adv_acc = {100.*adv_acc/total}, clean_acc = {100.*clean_acc/total}, loss = {test_loss/(batch_idx+1)}', \
+            f'curvature = {curvature/(batch_idx+1)}')
 
         self.test_loss.append(test_loss/num_batches)
         self.test_acc_adv.append(100.*adv_acc/total)
