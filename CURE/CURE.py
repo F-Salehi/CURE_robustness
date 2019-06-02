@@ -35,7 +35,7 @@ class CURE():
         self.lambda_ = lambda_
         self.precentage = precentage
         self.trainloader, self.testloader = trainloader, testloader
-        
+
         self.train_loss, self.train_acc, self.train_curv = [], [], []
         self.test_loss, self.test_acc_adv, self.test_acc_clean, self.test_curv = [], [], [], []
         self.train_loss_best, self.train_acc_best, self.train_curv_best = 0, 0, 0
@@ -163,7 +163,7 @@ class CURE():
         return test_loss/num_batches, 100.*adv_acc/total, 100.*clean_acc/total, curvature/num_batches           
 
     
-    def _find_z(self, inputs, targets):
+    def _find_z(self, inputs, targets, h):
         '''
         regularizer
         '''
@@ -182,7 +182,7 @@ class CURE():
     
         
     def regularizer(self, inputs, targets, h = 3., lambda_ = 4, mode = 'normal'):
-        z, norm_grad = self._find_z(inputs, targets)
+        z, norm_grad = self._find_z(inputs, targets, h)
         
         inputs.requires_grad_()
         outputs_pos = self.net.eval()(inputs + z)
