@@ -58,7 +58,7 @@ class CURE():
         '''
         self.optimizer = getattr(optim, optim_alg)(self.net.parameters(), **args)
         if not scheduler:
-            self.scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10**6, gamma=1)
+            self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=10**6, gamma=1)
         else:
             self.scheduler = getattr(optim.lr_scheduler, scheduler)(self.optimizer, **args_scheduler)
         
