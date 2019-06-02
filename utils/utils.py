@@ -87,6 +87,8 @@ def pgd(inputs, net, epsilon=[1.], targets=None, step_size=0.04, num_steps=20, e
 TOTAL_BAR_LENGTH = 65.
 last_time = time.time()
 begin_time = last_time
+term_width, _ = shutil.get_terminal_size()
+term_width = int(term_width)
 
 def progress_bar(current, total, msg=None):
     global last_time, begin_time
