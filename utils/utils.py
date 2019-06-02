@@ -2,6 +2,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torch.utils.data import Dataset, DataLoader
 import time
+import shutil
 import sys
 
 def read_vision_dataset(path, batch_size=128, num_workers=4, dataset='CIFAR10', transform=None):
