@@ -26,7 +26,9 @@ class CURE():
         CURE Class
         precentage: the precentage of the minimum eigens chosen
         '''
-        
+        if not torch.cuda.is_available() and device=='cuda':
+            raise ValueError("cuda is not available")
+
         self.net = net.to(device)
         self.criterion = nn.CrossEntropyLoss()
         self.device = device
