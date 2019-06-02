@@ -46,7 +46,7 @@ def pgd(inputs, net, epsilon=[1.], targets=None, step_size=0.04, num_steps=20, e
        perturbed image
     """
     input_shape = inputs.shape
-    pert_image = copy.deepcopy(inputs).to('cuda:0')
+    pert_image = inputs.clone().to('cuda:0')
     w = torch.zeros(input_shape)
     r_tot = torch.zeros(input_shape)
     

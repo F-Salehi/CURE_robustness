@@ -37,10 +37,7 @@ class CURE():
         self.trainloader, self.testloader = trainloader, testloader
 
         self.train_loss, self.train_acc, self.train_curv = [], [], []
-        self.test_loss, self.test_acc_adv, self.test_acc_clean, self.test_curv = [], [], [], []
-        self.train_loss_best, self.train_acc_best, self.train_curv_best = 0, 0, 0
-        self.test_loss_best, self.test_acc_adv_best, self.test_acc_clean_best, self.test_curv_best = 0, 0, 0, 0
-    
+        self.test_loss, self.test_acc_adv, self.test_acc_clean, self.test_curv = [], [], [], []    
 
     def set_optimizer(self, optim_alg='Adam', args={'lr':1e-4}, scheduler=None, args_scheduler={}):
         '''
@@ -159,6 +156,8 @@ class CURE():
         self.test_acc_clean.append(100.*clean_acc/total)
         self.test_curv.append(curvature/num_batches)
         # if self.test_acc_adv[-1] > self.test_acc_adv_best:
+        #     print(f'Saving the best model to /checkpoint')
+        #     self.save_model('/checkpoint')
             
         return test_loss/num_batches, 100.*adv_acc/total, 100.*clean_acc/total, curvature/num_batches           
 
@@ -203,6 +202,7 @@ class CURE():
         save the model
         '''
         print('Saving...')
+
         state = {
             'net': self.net.state_dict(),
             'optimizer': self.optimizer.state_dict()
