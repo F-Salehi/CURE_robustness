@@ -151,15 +151,15 @@ class CURE():
         print(f'epoch = {epoch}, adv_acc = {100.*adv_acc/total}, clean_acc = {100.*clean_acc/total}, loss = {test_loss/(batch_idx+1)}', \
             f'curvature = {curvature/(batch_idx+1)}')
 
-        self.test_loss.append(test_loss/num_batches)
+        self.test_loss.append(test_loss/(batch_idx+1))
         self.test_acc_adv.append(100.*adv_acc/total)
         self.test_acc_clean.append(100.*clean_acc/total)
-        self.test_curv.append(curvature/num_batches)
+        self.test_curv.append(curvature/(batch_idx+1))
         # if self.test_acc_adv[-1] > self.test_acc_adv_best:
         #     print(f'Saving the best model to /checkpoint')
         #     self.save_model('/checkpoint')
             
-        return test_loss/num_batches, 100.*adv_acc/total, 100.*clean_acc/total, curvature/num_batches           
+        return test_loss/(batch_idx+1), 100.*adv_acc/total, 100.*clean_acc/total, curvature/(batch_idx+1)           
 
     
     def _find_z(self, inputs, targets, h):
