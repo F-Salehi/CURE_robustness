@@ -76,10 +76,12 @@ class CURE():
         '''
         if len(h)>epochs:
             raise ValueError('Length of h should be less than number of epochs')
-
-        h_all = epochs * [1.0]
-        h_all[:len(h)] = list(h[:])
-        h_all[len(h):] = h[-1]
+        if len(h)==1:
+            h_all = epochs * [h[0]]
+        else:
+            h_all = epochs * [1.0]
+            h_all[:len(h)] = list(h[:])
+            h_all[len(h):] = h[-1]
 
         for epoch, h_tmp in enumerate(h_all):
             self._train(epoch, h=h_tmp)
