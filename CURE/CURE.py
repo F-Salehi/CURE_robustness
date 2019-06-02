@@ -34,7 +34,8 @@ class CURE():
         self.device = device
         self.lambda_ = lambda_
         self.precentage = precentage
-
+        self.trainloader, self.testloader = trainloader, testloader
+        
         self.train_loss, self.train_acc, self.train_curv = [], [], []
         self.test_loss, self.test_acc_adv, self.test_acc_clean, self.test_curv = [], [], [], []
         self.train_loss_best, self.train_acc_best, self.train_curv_best = 0, 0, 0
