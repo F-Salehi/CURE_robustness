@@ -135,7 +135,7 @@ class CURE():
         self.train_acc.append(100.*num_correct/total)
         self.train_curv.append(curvature/(batch_idx+1))
                 
-    def test(self, epoch, h):  
+    def test(self, epoch, h, num_pgd_steps=20):  
         '''
         Testing the model 
         '''
