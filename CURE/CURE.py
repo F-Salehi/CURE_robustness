@@ -2,10 +2,10 @@ import torch
 import copy
 import torch.nn as nn
 from torch.autograd.gradcheck import zero_gradients
-from utils import progress_bar
+from utils.utils import progress_bar
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import pgd
+from utils.utils import pgd
 import torchvision
 import os
 import torch
@@ -15,7 +15,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
 from torch.optim.lr_scheduler import StepLR
-from utils import progress_bar
 from torch.distributions import uniform
 
     
