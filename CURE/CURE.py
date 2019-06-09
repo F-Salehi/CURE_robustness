@@ -18,7 +18,7 @@ from torch.optim.lr_scheduler import StepLR
 from torch.distributions import uniform
 
     
-class CURE():
+class CURELearner():
     def __init__(self, net, trainloader, testloader, device='cuda', lambda_ = 4,
                  path='./checkpoint'):
         '''
@@ -92,7 +92,7 @@ class CURE():
         else:
             h_all = epochs * [1.0]
             h_all[:len(h)] = list(h[:])
-            h_all[len(h):] = h[-1]
+            h_all[len(h):] = [h[-1] for _ in range(epochs - len(h))]
 
         for epoch, h_tmp in enumerate(h_all):
             self._train(epoch, h=h_tmp)
