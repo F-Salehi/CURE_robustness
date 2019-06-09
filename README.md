@@ -3,15 +3,17 @@ CURE is an adversarial training algorithm via a curvature regularizer.
 
 ### Dependencies
 ---
-To use the code use python3.7 and install the package using
+The code is compatible with python3.7. To install the dependecies use
 ```
 pip install -e .
 ```
 
-To start, you might want to look at the notebook
+To start, you can play with the following notebook:
 
 * "[CURE Example Code](https://github.com/F-Salehi/CURE_robustness/blob/master/notebooks/example.ipynb) "
 
+It trains a robust _ architecture on CIFAR-10, which achieves _ % and _ % clean and adversarial accuracies respectively.
+
 ### Reference 
 ----
-"[Robustness via curvature regularization, and vice versa](https://arxiv.org/abs/1811.09716) ", SM. Moosavi-Dezfooli, A. Fawzi, J. Uesato, and P. Frossard.
+"[Robustness via curvature regularization, and vice versa](https://arxiv.org/abs/1811.09716) ", SM. Moosavi-Dezfooli, A. Fawzi, J. Uesato, and P. Frossard, _CVPR 2019_.
