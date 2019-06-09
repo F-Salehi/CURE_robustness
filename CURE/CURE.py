@@ -20,11 +20,21 @@ from torch.distributions import uniform
 
     
 class CURE():
-    def __init__(self, net, trainloader, testloader, device='cuda', lambda_ = 4, precentage = 1
+    def __init__(self, net, trainloader, testloader, device='cuda', lambda_ = 4
                  ):
         '''
-        CURE Class
-        precentage: the precentage of the minimum eigens chosen
+        CURE Class: Implementation of "Robustness via curvature regularization, and vice versa"     
+                    in https://arxiv.org/abs/1811.09716
+        ================================================
+        Arguments:
+        net: PyTorch nn
+            Network structure
+        trainloader: PyTorch Dataloader
+        testloader: PyTorch Dataloader
+        device: 'cpu' or 'cuda' if GPU available
+            type of decide to move tensors
+        lambda_: floar
+            Power of regularization
         '''
         if not torch.cuda.is_available() and device=='cuda':
             raise ValueError("cuda is not available")
@@ -33,7 +43,6 @@ class CURE():
         self.criterion = nn.CrossEntropyLoss()
         self.device = device
         self.lambda_ = lambda_
-        self.precentage = precentage
         self.trainloader, self.testloader = trainloader, testloader
 
         self.train_loss, self.train_acc, self.train_curv = [], [], []
