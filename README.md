@@ -1,5 +1,5 @@
 # CURE_robustness
-CURE is an adversarial training algorithm via a curvature regularizer.
+CURE is a deep network training algorithm via a curvature regularizer. Networks trained using CURE can achieve significant adversarial robustness.
 
 ### Dependencies
 ---
