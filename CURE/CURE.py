@@ -173,7 +173,7 @@ class CURE():
         self.test_acc_clean.append(100.*clean_acc/total)
         self.test_curv.append(curvature/(batch_idx+1))
         if self.test_acc_adv[-1] > self.test_acc_adv_best:
-            self.self.test_acc_adv_best = self.test_acc_adv[-1]
+            self.test_acc_adv_best = self.test_acc_adv[-1]
             print(f'Saving the best model to {self.path}')
             self.save_model(self.path)
             
@@ -242,25 +242,12 @@ class CURE():
         '''
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint['net'])
-    
-    def write_file(self, name):
-        with open(name, 'w') as f:
-            f.write('[train_loss, train_acc, train_curv, test_loss, test_acc_clean, test_acc_adv, test_curv]\n')
-            f.write('[')
-            nums = [self.train_loss_best.item(), self.train_acc_best, self.train_curv_best.item(), self.test_loss_best,
-                    self.test_acc_clean_best, self.test_acc_adv_best, self.test_curv_best]
-            nums = ','.join([str(num) for num in nums])
-            f.write(nums)
-            f.write(']\n')
-            f.write('[')
-            nums = [self.train_loss[-1].item(), self.train_acc[-1], self.train_curv[-1].item(), self.test_loss[-1],
-                    self.test_acc_clean[-1], self.test_acc_adv[-1], self.test_curv[-1]]
-            nums = ','.join([str(num) for num in nums])
-            f.write(nums)
-            f.write(']\n')
            
             
     def plot_results(self):
+        """
+        Plotting the results
+        """
         plt.figure(figsize=(15,12))
         plt.suptitle('Results',fontsize = 18,y = 0.96)
         plt.subplot(3,3,1)
