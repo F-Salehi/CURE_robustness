@@ -92,7 +92,7 @@ class CURELearner():
         else:
             h_all = epochs * [1.0]
             h_all[:len(h)] = list(h[:])
-            h_all[len(h):] = [h[-1] for _ in range(epochs - len(h))]
+            h_all[len(h):] = (epochs - len(h)) * [h[-1]]
 
         for epoch, h_tmp in enumerate(h_all):
             self._train(epoch, h=h_tmp)
