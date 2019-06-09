@@ -20,21 +20,24 @@ from torch.distributions import uniform
 
     
 class CURE():
-    def __init__(self, net, trainloader, testloader, device='cuda', lambda_ = 4
-                 ):
+    def __init__(self, net, trainloader, testloader, device='cuda', lambda_ = 4,
+                 path='./checkpoint'):
         '''
         CURE Class: Implementation of "Robustness via curvature regularization, and vice versa"     
                     in https://arxiv.org/abs/1811.09716
         ================================================
         Arguments:
+
         net: PyTorch nn
-            Network structure
+            network structure
         trainloader: PyTorch Dataloader
         testloader: PyTorch Dataloader
         device: 'cpu' or 'cuda' if GPU available
             type of decide to move tensors
-        lambda_: floar
-            Power of regularization
+        lambda_: float
+            power of regularization
+        path: string
+            path to save the best model
         '''
         if not torch.cuda.is_available() and device=='cuda':
             raise ValueError("cuda is not available")
@@ -44,18 +47,19 @@ class CURE():
         self.device = device
         self.lambda_ = lambda_
         self.trainloader, self.testloader = trainloader, testloader
-
+        self.path = path
+        self.test_acc_adv_best = 0
         self.train_loss, self.train_acc, self.train_curv = [], [], []
         self.test_loss, self.test_acc_adv, self.test_acc_clean, self.test_curv = [], [], [], []    
 
     def set_optimizer(self, optim_alg='Adam', args={'lr':1e-4}, scheduler=None, args_scheduler={}):
         '''
-        setting the optimizer of the network
-        
+        Setting the optimizer of the network
+        ================================================
         Arguments:
         
         optim_alg : string
-            NAme of the optimizer
+            Name of the optimizer
         args: dict
             Parameter of the optimizer
         scheduler: optim.lr_scheduler
@@ -73,11 +77,12 @@ class CURE():
     def train(self, h = [3], epochs = 15):
         '''
         Training the network
-
+        ================================================
         Arguemnets:
 
-        h : list
-            Different h for different epochs of training
+        h : list with length less than the number of epochs
+            Different h for different epochs of training, 
+            can have a single number or a list of floats for each epoch
         epochs : int
             Number of epochs
         '''
@@ -97,7 +102,7 @@ class CURE():
         
     def _train(self, epoch, h):
         '''
-        training the model
+        Training the model 
         '''
         print('\nEpoch: %d' % epoch)
         train_loss, total = 0, 0
@@ -130,7 +135,10 @@ class CURE():
         self.train_acc.append(100.*num_correct/total)
         self.train_curv.append(curvature/(batch_idx+1))
                 
-    def test(self, epoch, h, num_pgd_steps=20):  
+    def test(self, epoch, h):  
+        '''
+        Testing the model 
+        '''
         test_loss, adv_acc, total, curvature, clean_acc, grad_sum = 0, 0, 0, 0, 0, 0
 
         for batch_idx, (inputs, targets) in enumerate(self.testloader):
@@ -164,16 +172,17 @@ class CURE():
         self.test_acc_adv.append(100.*adv_acc/total)
         self.test_acc_clean.append(100.*clean_acc/total)
         self.test_curv.append(curvature/(batch_idx+1))
-        # if self.test_acc_adv[-1] > self.test_acc_adv_best:
-        #     print(f'Saving the best model to /checkpoint')
-        #     self.save_model('/checkpoint')
+        if self.test_acc_adv[-1] > self.test_acc_adv_best:
+            self.self.test_acc_adv_best = self.test_acc_adv[-1]
+            print(f'Saving the best model to {self.path}')
+            self.save_model(self.path)
             
         return test_loss/(batch_idx+1), 100.*adv_acc/total, 100.*clean_acc/total, curvature/(batch_idx+1)           
 
     
     def _find_z(self, inputs, targets, h):
         '''
-        regularizer
+        Finding the direction in the regularizer
         '''
         inputs.requires_grad_()
         outputs = self.net.eval()(inputs)
@@ -189,7 +198,10 @@ class CURE():
         return z, norm_grad
     
         
-    def regularizer(self, inputs, targets, h = 3., lambda_ = 4, mode = 'normal'):
+    def regularizer(self, inputs, targets, h = 3., lambda_ = 4):
+        '''
+        Regularizer term in CURE
+        '''
         z, norm_grad = self._find_z(inputs, targets, h)
         
         inputs.requires_grad_()
@@ -208,8 +220,14 @@ class CURE():
             
     def save_model(self, path):
         '''
-        save the model
+        Saving the model
+        ================================================
+        Arguments:
+
+        path: string
+            path to save the model
         '''
+        
         print('Saving...')
 
         state = {
@@ -220,7 +238,7 @@ class CURE():
         
     def import_model(self, path):
         '''
-        Import the already trained model
+        Importing the pre-trained model
         '''
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint['net'])
