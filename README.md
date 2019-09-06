@@ -12,7 +12,6 @@ To start, you can play with the following notebook:
 
 * "[CURE Example Code](https://github.com/F-Salehi/CURE_robustness/blob/master/notebooks/example.ipynb) "
 
-It trains a robust _ architecture on CIFAR-10, which achieves _ % and _ % clean and adversarial accuracies respectively.
 
 ### Reference 
 ----
