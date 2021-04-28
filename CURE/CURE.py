@@ -138,7 +138,7 @@ class CURELearner():
         '''
         Testing the model 
         '''
-        test_loss, adv_acc, total, curvature, clean_acc, grad_sum = 0, 0, 0, 0, 0, 0
+        test_loss, adv_acc, total, total_adv, curvature, clean_acc, grad_sum = 0, 0, 0, 0, 0, 0, 0
 
         for batch_idx, (inputs, targets) in enumerate(self.testloader):
 
@@ -152,19 +152,24 @@ class CURELearner():
 
             inputs_pert = inputs + 0.
             eps = 5./255.*8
-            r = pgd(inputs, self.net.eval(), epsilon=[eps], targets=targets, step_size=0.04,
-                    num_steps=num_pgd_steps, epsil=eps)
+            
+            if batch_idx%10==0:
+                r = pgd(inputs, self.net.eval(), epsilon=[eps], targets=targets, step_size=0.04,
+                        num_steps=num_pgd_steps, epsil=eps)
 
-            inputs_pert = inputs_pert + eps * torch.Tensor(r).to(self.device)
-            outputs = self.net(inputs_pert)
-            probs, predicted = outputs.max(1)
-            adv_acc += predicted.eq(targets).sum().item()
-            cur, norm_grad = self.regularizer(inputs, targets, h=h)
-            grad_sum += norm_grad
-            curvature += cur.item()
-            test_loss += cur.item()
+                inputs_pert = inputs_pert + eps * torch.Tensor(r).to(self.device)
+                outputs = self.net(inputs_pert)
+                probs, predicted = outputs.max(1)
+                adv_acc += predicted.eq(targets).sum().item()
+                
+                total_adv += targets.size(0)
+                
+#             cur, norm_grad = self.regularizer(inputs, targets, h=h)
+            grad_sum += 0#norm_grad
+            curvature += 0#cur.item()
+            test_loss += 0#cur.item()
 
-        print(f'epoch = {epoch}, adv_acc = {100.*adv_acc/total}, clean_acc = {100.*clean_acc/total}, loss = {test_loss/(batch_idx+1)}', \
+        print(f'epoch = {epoch}, adv_acc = {100.*adv_acc/total_adv}, clean_acc = {100.*clean_acc/total}, loss = {test_loss/(batch_idx+1)}', \
             f'curvature = {curvature/(batch_idx+1)}')
 
         self.test_loss.append(test_loss/(batch_idx+1))
@@ -197,15 +202,15 @@ class CURELearner():
         return z, norm_grad
     
         
-    def regularizer(self, inputs, targets, h = 3., lambda_ = 4):
+    def regularizer(self, inputs, targets, h = 3.):
         '''
         Regularizer term in CURE
         '''
         z, norm_grad = self._find_z(inputs, targets, h)
         
         inputs.requires_grad_()
-        outputs_pos = self.net.eval()(inputs + z)
-        outputs_orig = self.net.eval()(inputs)
+        outputs_pos = self.net.train()(inputs + z)
+        outputs_orig = self.net.train()(inputs)
 
         loss_pos = self.criterion(outputs_pos, targets)
         loss_orig = self.criterion(outputs_orig, targets)
@@ -241,7 +246,7 @@ class CURELearner():
         '''
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint['net'])
-           
+        self.net = torch.nn.DataParallel(self.net)           
             
     def plot_results(self):
         """
