@@ -43,6 +43,7 @@ class CURELearner():
 
         self.net = net.to(device)
         self.criterion = nn.CrossEntropyLoss()
+        self.criterion_noreduction = nn.CrossEntropyLoss(reduction='none')
         self.device = device
         self.lambda_ = lambda_
         self.trainloader, self.testloader = trainloader, testloader
@@ -190,10 +191,10 @@ class CURELearner():
         '''
         inputs.requires_grad_()
         outputs = self.net.eval()(inputs)
-        loss_z = self.criterion(self.net.eval()(inputs), targets)                
+        loss_z = self.criterion_noreduction(self.net.eval()(inputs), targets)                
         loss_z.backward(torch.ones(targets.size()).to(self.device))         
         grad = inputs.grad.data + 0.0
-        norm_grad = grad.norm().item()
+        norm_grad = grad.norm().item()        
         z = torch.sign(grad).detach() + 0.
         z = 1.*(h) * (z+1e-7) / (z.reshape(z.size(0), -1).norm(dim=1)[:, None, None, None]+1e-7)  
         zero_gradients(inputs) 
@@ -212,8 +213,8 @@ class CURELearner():
         outputs_pos = self.net.train()(inputs + z)
         outputs_orig = self.net.train()(inputs)
 
-        loss_pos = self.criterion(outputs_pos, targets)
-        loss_orig = self.criterion(outputs_orig, targets)
+        loss_pos = self.criterion_noreduction(outputs_pos, targets)
+        loss_orig = self.criterion_noreduction(outputs_orig, targets)
         grad_diff = torch.autograd.grad((loss_pos-loss_orig), inputs, grad_outputs=torch.ones(targets.size()).to(self.device),
                                         create_graph=True)[0]
         reg = grad_diff.reshape(grad_diff.size(0), -1).norm(dim=1)
